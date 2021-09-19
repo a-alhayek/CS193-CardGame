@@ -11,9 +11,12 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
     var cardsNumberDefault = 8
     private(set) var cards: Array<Card>
     private var indexOfTheOneFaceUpCard: Int?
+    private(set) var themeName: String
+    var score = 0
     
-    init(createCardContent: (Int) -> [CardContent]) {
+    init(themeName: String, createCardContent: (Int) -> [CardContent]) {
         cards = Array<Card>()
+        self.themeName = themeName
         createCardContent(cardsNumberDefault).forEach {
             cards.append(Card(id: UUID(), content: $0))
             cards.append(Card(id: UUID(), content: $0))
@@ -29,6 +32,9 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
                 if cards[choosenIndex].content == cards[potentialMatchIndex].content {
                     cards[choosenIndex].isMatched = true
                     cards[potentialMatchIndex].isMatched = true
+                    score += 2
+                } else {
+                    score -= 1
                 }
                 indexOfTheOneFaceUpCard = nil
             } else {
@@ -43,7 +49,6 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
     
     struct Card: Identifiable {
         var id: UUID
-        
         var isFaceUp: Bool = false
         var isMatched: Bool = false
         var isViewedBefore: Bool = true

@@ -7,14 +7,16 @@
 
 import SwiftUI
 
-enum EmojiKind: Hashable {
+enum EmojiKind: String, Hashable, CaseIterable {
+ 
+    
     case Animals
     case Fruits
     case Cars
     case Flags
     case Emojis
     case Tools
-    case newTheme([String], name: String)
+    case Random
     
     var systemName: String {
         switch self {
@@ -28,26 +30,7 @@ enum EmojiKind: Hashable {
         }
     }
     
-    var name: String {
-        switch self {
-        case .Animals:
-            return "Animals"
-        case .Fruits:
-            return "Fruits"
-        case .Cars:
-            return "Cars"
-        case .Flags:
-            return "Flags"
-        case .Emojis:
-            return "Emojis"
-        case .Tools:
-            return "Tools"
-        case .newTheme(_, let name):
-            return name
-        }
-    }
-    
-    var emojis: [String]  {
+    var emojis: [String]?  {
         switch self {
         case .Animals:
             return ["🐶","🐱","🐹","🐰","🦊","🐻","🐼","🐻‍❄️","🐨","🐯","🐮","🐷","🐦","🐥","🦋","🪳","🐙"]
@@ -61,17 +44,19 @@ enum EmojiKind: Hashable {
             return ["🎃","👹","😈","🤥","🤫","🥳","🥸","🥵","😨","😶‍🌫️","🥶","😎","🤨","😋","😁","😃","😀"]
         case .Tools:
            return ["🛠","⚒","🔨","🔧","🧰","⚖️","💈","🦠","🧪","🌡","🧹","🧲","📯","🧽","🔒","📎","✏️"]
-        case .newTheme(let array, _):
-            return array
+        case .Random:
+            return EmojiKind.allCases.shuffled().first?.emojis
         }
     }
 }
 
 
 class EmojiMemoryGame: ObservableObject {
+    @Published var newGamepressed = false
+    
     static func createModel() -> MemoryGame<String> {
-        MemoryGame<String>() {
-            Array.init(EmojiKind.Emojis.emojis[0..<$0])
+        MemoryGame<String>(themeName: EmojiKind.Emojis.rawValue) {
+            Array.init(EmojiKind.Emojis.emojis?[0..<$0] ?? [] )
        }
     }
     @Published private(set) var model = createModel()
@@ -80,6 +65,26 @@ class EmojiMemoryGame: ObservableObject {
         model.cards
     }
     
+    var themeName: String {
+        model.themeName
+    }
+    
+    var score: Int {
+        model.score
+    }
+    
+    func userPressedNewGame() {
+        newGamepressed.toggle()
+    }
+    func selctedNewTypeOfEmojies(emojiKind: EmojiKind) {
+        if let emojis = emojiKind.emojis {
+            model = MemoryGame<String>(themeName: emojiKind.rawValue) {
+                Array.init(emojis[0..<$0])
+            }
+        }
+        
+        newGamepressed.toggle()
+    }
     //MARK: Intent(s)
 
     func choose(_ card: MemoryGame<String>.Card) {

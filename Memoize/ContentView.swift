@@ -11,38 +11,44 @@ struct ContentView: View {
     @ObservedObject var viewModel: EmojiMemoryGame
     var body: some View {
         VStack {
-            HStack {
-                Spacer()
-                Text("Memorize!").font(.largeTitle).bold()
-                    .padding(.leading).frame(alignment: .center)
-                Button {
-                    
-                } label: {
-                    Text("New Game")
+            HStack(alignment: .center, spacing: 5) {
+                VStack(alignment: .center, spacing: 5) {
+                    Text("Score:").font(.title3)
+                    Text("\(viewModel.score)").font(.title3)
                 }
+                
+               Spacer()
+    
+                    Button {
+                        viewModel.userPressedNewGame()
+                    } label: {
+                        Text("New Game").font(.title3)
+                    }
             }
             CardGrid
             Spacer()
-        }.padding(.horizontal)
+            Text(viewModel.themeName).font(.title)
+            
+        }.padding(.horizontal).sheet(isPresented: $viewModel.newGamepressed) {
+            gameChoices
+        }
     }
     
-//    var tabBar: some View {
-//        HStack {
-//            ForEach(EmojiKind.allCases, id: \.self) { emoji in
-//                Button {
-////                    currentEmojis = emoji
-////                    isEmojiSheetPresent = !isEmojiSheetPresent
-////                    emojiCount = Int.random(in: 8..<currentEmojis.emojis.count)
-//                } label: {
-//                    VStack{
-//                        Image(systemName: emoji.systemName).font(.title)
-//                        Text(emoji.rawValue)
-//                    }
-//                    .padding(.horizontal)
-//                }
-//            }
-//        }
-//    }
+    var gameChoices: some View {
+        VStack {
+            ForEach(EmojiKind.allCases, id: \.self) { emoji in
+                Button {
+                    viewModel.selctedNewTypeOfEmojies(emojiKind: emoji)
+                } label: {
+                    VStack{
+                        Image(systemName: emoji.systemName).font(.title)
+                        Text(emoji.rawValue)
+                    }
+                    .padding(.horizontal)
+                }
+            }
+        }
+    }
     
     
     var CardGrid: some View {
@@ -70,6 +76,8 @@ struct CardView: View {
                 shape.stroke(lineWidth: 3)
                 Text(card.content)
                     .font(.largeTitle)
+            } else if card.isMatched {
+                shape.opacity(0)
             } else {
                 shape.fill()
             }
